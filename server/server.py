@@ -3,6 +3,11 @@ from flask_cors import CORS,  cross_origin
 import os
 from time import sleep
 import random
+import base64
+from io import BytesIO
+from base64 import b64decode
+import imghdr
+
 
 import numpy as np
 from PIL import Image
@@ -70,19 +75,36 @@ def plot_images(paths):
 
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
-CORS(app, origins=['http://127.0.0.1:3000', 'http://localhost:3000'])
+# app.config['DEBUG'] = True
+CORS(app)
 
 
 @app.route('/api/v1/user', methods=['POST'])
 def create_user():
 
-    file = request.files['file']
-    file.save(os.path.join(os.getcwd(), "me.jpg"))
+    # Get the image data from the request
+    image_data = request.form['image']
 
-    sleep(2)
+    # Remove the substring from the original string
+    modified_string = image_data.replace('data:image/jpeg;base64,', '')
 
-    input_img_path = 'me.jpg'
+    # Decode the image data
+    decoded_data = base64.b64decode(modified_string)
+
+    # Get the current directory of the Flask script
+    script_dir = os.path.dirname(__file__)
+
+    # Save the file to the current directory of the Flask script
+    with open(os.path.join(script_dir, 'image.jpg'), 'wb') as f:
+        f.write(decoded_data)
+        f.close()
+
+    print('sone ja raha ')
+    sleep(5)
+    print('uth gaya')
+
+    # input_img_path = 'me.jpg'
+    input_img_path = 'image.jpg'
     encoding = img_to_encoding(input_img_path)
     closest_person = find_closest(encodings, encoding)
     closest_similarity = 1 - distance(closest_person['encoding'], encoding)

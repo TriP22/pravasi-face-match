@@ -10,7 +10,7 @@ import { Camera } from "@mediapipe/camera_utils";
 import axios from "axios";
 
 import AiAnimation from "./assets/ai_animation.gif";
-
+import Sound from "./assets/sound.mp3";
 import * as Faces from "./assets/faces/faces";
 
 const Data = [
@@ -138,9 +138,12 @@ const Data = [
 
 function App() {
   const [step, setStep] = useState(1);
-
   const [result, setResult] = useState(Data[0]);
+  const [keyPressed, setKeyPressed] = useState(null);
+
   const AutoStartTimer = useRef();
+
+  const soundRef = useRef();
 
   const { webcamRef, boundingBox, isLoading, detected, facesDetected } =
     useFaceDetection({
@@ -171,21 +174,39 @@ function App() {
       AutoStartTimer.current = setTimeout(function () {
         setStep(2);
         takePicture();
-      }, 4000);
+      }, 1000);
       console.log("start the flow");
     } else if (detected === false && step === 1) {
       console.log("stop the flow");
       clearTimeout(AutoStartTimer.current);
     }
+
+    if (step === 2) {
+      soundRef.current.play();
+    } else {
+      soundRef.current.pause();
+    }
   }, [detected, step]);
 
   function takePicture() {
-    const imageSrc = webcamRef.current.getScreenshot();
+    // const imageSrc = webcamRef.current.getScreenshot();
+
+    // const screenshotBlob = new Blob([imageSrc], { type: "image/jpeg" });
+    // const formData = new FormData();
+
+    // formData.append("file", screenshotBlob);
+
+    // Get the screenshot data from the webcam
+    const screenshotData = webcamRef.current.getScreenshot();
+
+    // Create a FormData object to store the image data
     const formData = new FormData();
-    formData.append("file", imageSrc);
+    formData.append("image", screenshotData);
+
+    // Send the POST request to the Flask API with the FormData object as the request body
 
     axios
-      .post("http://127.0.0.1:5000/api/v1/user", formData)
+      .post("http://localhost:5000/api/v1/user", formData)
       .then((response) => {
         console.log(response.data);
 
@@ -206,6 +227,8 @@ function App() {
 
   return (
     <div className="App">
+      <audio src={Sound} ref={soundRef} loop autoPlay />
+
       {/* SPLASH */}
       <div
         style={{
@@ -249,7 +272,7 @@ function App() {
           zIndex: 1100,
 
           opacity: 1,
-          // display: "none",
+          display: "none",
         }}
       >
         <div>
@@ -280,6 +303,7 @@ function App() {
             <Webcam
               ref={webcamRef}
               forceScreenshotSourceSize
+              screenshotFormat="image/jpeg"
               style={{
                 height: "100%",
                 width: "100%",
