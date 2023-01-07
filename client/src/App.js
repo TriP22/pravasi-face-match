@@ -156,10 +156,14 @@ const Data = [
   },
 ];
 
+const MaleArr = Data.filter((x) => x.gender === "Male");
+const FemaleArr = Data.filter((x) => x.gender === "Female");
+
 function App() {
   const [step, setStep] = useState(1);
   const [result, setResult] = useState(Data[0]);
   const [keyPressed, setKeyPressed] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const AutoStartTimer = useRef();
 
@@ -207,9 +211,6 @@ function App() {
             }, 5000);
           } else if (keyPressed === "Male") {
             setTimeout(function () {
-              const MaleArr = Data.filter((x) => x.gender === "Male");
-
-              console.log("yaha", keyPressed, MaleArr);
               const resultObj = MaleArr[Math.floor(Math.random() * 17)];
               console.log(resultObj);
 
@@ -221,9 +222,6 @@ function App() {
             }, 5000);
           } else if (keyPressed === "Female") {
             setTimeout(function () {
-              const FemaleArr = Data.filter((x) => x.gender === "Female");
-
-              console.log("yaha", keyPressed, FemaleArr);
               const resultObj = FemaleArr[Math.floor(Math.random() * 3)];
               console.log(resultObj);
 
@@ -253,13 +251,6 @@ function App() {
   }, [detected, step]);
 
   function takePicture() {
-    // const imageSrc = webcamRef.current.getScreenshot();
-
-    // const screenshotBlob = new Blob([imageSrc], { type: "image/jpeg" });
-    // const formData = new FormData();
-
-    // formData.append("file", screenshotBlob);
-
     // Get the screenshot data from the webcam
     const screenshotData = webcamRef.current.getScreenshot();
 
@@ -269,23 +260,42 @@ function App() {
 
     // Send the POST request to the Flask API with the FormData object as the request body
 
+    setLoading(true);
     axios
       .post("http://localhost:5000/api/v1/user", formData)
       .then((response) => {
         console.log(response.data);
 
-        let obj = Data.find((o) => o.name === response.data.name);
+        if (response.data?.gender === "Male") {
+          const resultObj = MaleArr[Math.floor(Math.random() * 17)];
+          console.log("|||||||||", resultObj);
 
-        setResult(obj);
-        setStep(3);
-        setTimeout(function () {
-          setStep(1);
-        }, 6000);
+          setResult(resultObj);
+          console.log("//////////////");
+          setStep(3);
+          setTimeout(function () {
+            setStep(1);
+          }, 6000);
+        } else if (response.data?.gender === "Female") {
+          const resultObj = FemaleArr[Math.floor(Math.random() * 3)];
+          console.log(resultObj);
+
+          setResult(resultObj);
+
+          setStep(3);
+          setTimeout(function () {
+            setStep(1);
+          }, 6000);
+        }
       })
       .catch((error) => {
         console.log(error);
 
         setStep(1);
+      })
+      .finally(() => {
+        console.log("7878888888888");
+        setLoading(false);
       });
   }
 
@@ -431,44 +441,49 @@ function App() {
           height: 1920,
           width: 1080,
           transition: "all 2s",
-          zIndex: 950,
+          zIndex: -800,
 
-          opacity: step === 3 ? 1 : 0,
+          opacity: step === 3 && !loading ? 1 : 0,
+          bottom: step === 3 && !loading ? -1920 : 0,
         }}
       >
-        <img
-          className="app-face-animation"
-          src={result?.image}
-          width="100%"
-          alt="animation"
-        />
-        <div
-          style={{
-            position: "absolute",
-            color: "#f5f5f5",
-            textShadow: "2px 2px #000",
-            bottom: 150,
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 32,
-            }}
-          >
-            You resemble
-          </div>
-          <div
-            style={{
-              fontSize: 56,
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {result?.name}
-          </div>
-        </div>
+        {step === 3 && (
+          <>
+            <img
+              className="app-face-animation"
+              src={result?.image}
+              width="100%"
+              alt="animation"
+            />
+            <div
+              style={{
+                position: "absolute",
+                color: "#f5f5f5",
+                textShadow: "2px 2px #000",
+                bottom: 150,
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 32,
+                }}
+              >
+                You resemble
+              </div>
+              <div
+                style={{
+                  fontSize: 56,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {result?.name}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
