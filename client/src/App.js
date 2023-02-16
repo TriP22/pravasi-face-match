@@ -1,11 +1,7 @@
 import "./App.css";
 import { React, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
-// import * as faceapi from "face-api.js";
-
-import { CameraOptions, useFaceDetection } from "react-use-face-detection";
-import FaceDetection from "@mediapipe/face_detection";
-import { Camera } from "@mediapipe/camera_utils";
+import FeatherIcon from "feather-icons-react";
 
 import axios from "axios";
 
@@ -161,105 +157,28 @@ const FemaleArr = Data.filter((x) => x.gender === "Female");
 
 function App() {
   const [step, setStep] = useState(1);
+  const [personImage, setImage] = useState(null);
   const [result, setResult] = useState(Data[0]);
   const [keyPressed, setKeyPressed] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const AutoStartTimer = useRef();
-
+  const webcamRef = useRef();
   const soundRef = useRef();
 
-  const { webcamRef, boundingBox, isLoading, detected, facesDetected } =
-    useFaceDetection({
-      faceDetectionOptions: {
-        model: "short",
-      },
-      faceDetection: new FaceDetection.FaceDetection({
-        locateFile: (file) =>
-          `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
-      }),
-      camera: ({ mediaSrc, onFrame, width, height }: CameraOptions) =>
-        new Camera(mediaSrc, {
-          onFrame,
-          width,
-          height,
-        }),
-    });
-
-  // useEffect(() => {
-  //   console.log("FACE", facesDetected, boundingBox, detected);
-  // }, [facesDetected]);
-
   useEffect(() => {
-    console.log("FACE", facesDetected, boundingBox, detected);
-    console.log("STEP", step);
-
-    if (detected && step === 1) {
-      AutoStartTimer.current = setTimeout(function () {
-        setStep(2);
-
-        if (keyPressed != null) {
-          if (keyPressed === "Modi") {
-            setTimeout(function () {
-              let obj = Data.find((o) => o.name === "Shyamji Krishnavarma");
-
-              setResult(obj);
-              setStep(3);
-              setTimeout(function () {
-                setStep(1);
-              }, 6000);
-            }, 5000);
-          } else if (keyPressed === "Male") {
-            setTimeout(function () {
-              const resultObj = MaleArr[Math.floor(Math.random() * 17)];
-              console.log(resultObj);
-
-              setResult(resultObj);
-              setStep(3);
-              setTimeout(function () {
-                setStep(1);
-              }, 6000);
-            }, 5000);
-          } else if (keyPressed === "Female") {
-            setTimeout(function () {
-              const resultObj = FemaleArr[Math.floor(Math.random() * 3)];
-              console.log(resultObj);
-
-              setResult(resultObj);
-
-              setStep(3);
-              setTimeout(function () {
-                setStep(1);
-              }, 6000);
-            }, 5000);
-          }
-        } else {
-          takePicture();
-        }
-      }, 1000);
-      console.log("start the flow");
-    } else if (detected === false && step === 1) {
-      console.log("stop the flow");
-      clearTimeout(AutoStartTimer.current);
-    }
-
     if (step === 2) {
       soundRef.current.play();
     } else {
       soundRef.current.pause();
     }
-  }, [detected, step]);
+  }, [step]);
 
-  function takePicture() {
-    // Get the screenshot data from the webcam
-    const screenshotData = webcamRef.current.getScreenshot();
-
+  function takePicture(personImg) {
     // Create a FormData object to store the image data
     const formData = new FormData();
-    formData.append("image", screenshotData);
+    formData.append("image", personImg);
 
     // Send the POST request to the Flask API with the FormData object as the request body
-
     setLoading(true);
     axios
       .post("http://localhost:5000/api/v1/user", formData)
@@ -268,13 +187,11 @@ function App() {
 
         if (response.data?.gender === "Male") {
           const resultObj = MaleArr[Math.floor(Math.random() * 17)];
-          console.log("|||||||||", resultObj);
-
           setResult(resultObj);
-          console.log("//////////////");
           setStep(3);
           setTimeout(function () {
             setStep(1);
+            setImage(null);
           }, 6000);
         } else if (response.data?.gender === "Female") {
           const resultObj = FemaleArr[Math.floor(Math.random() * 3)];
@@ -285,6 +202,7 @@ function App() {
           setStep(3);
           setTimeout(function () {
             setStep(1);
+            setImage(null);
           }, 6000);
         }
       })
@@ -292,9 +210,9 @@ function App() {
         console.log(error);
 
         setStep(1);
+        setImage(null);
       })
       .finally(() => {
-        console.log("7878888888888");
         setLoading(false);
       });
   }
@@ -338,6 +256,130 @@ function App() {
           zIndex: 1000,
         }}
       >
+        <header className="app-splash-text">
+          <p>Please stand at the marked position</p>
+        </header>
+        {personImage ? (
+          <img
+            src={personImage}
+            alt="person"
+            style={{
+              width: "100%",
+              height: "100%",
+              zIndex: -10,
+              position: "absolute",
+              objectFit: "contain",
+              inset: 0,
+            }}
+          />
+        ) : (
+          <Webcam
+            ref={webcamRef}
+            forceScreenshotSourceSize
+            screenshotFormat="image/jpeg"
+            style={{
+              height: "100%",
+              width: "100%",
+              zIndex: -10,
+              position: "absolute",
+              inset: 0,
+            }}
+          />
+        )}
+        <div className="app-splash-buttons">
+          {personImage ? (
+            <>
+              <button
+                className="app-splash-button"
+                onClick={() => {
+                  setImage(null);
+                }}
+              >
+                <FeatherIcon
+                  className="app-splash-button-icon"
+                  icon="refresh-ccw"
+                  size="32"
+                />
+                <div className="app-splash-button-text">Retake</div>
+              </button>
+              <button
+                className="app-splash-button"
+                onClick={() => {
+                  setStep(2);
+
+                  if (keyPressed != null) {
+                    if (keyPressed === "Modi") {
+                      setTimeout(function () {
+                        let obj = Data.find(
+                          (o) => o.name === "Shyamji Krishnavarma"
+                        );
+
+                        setResult(obj);
+                        setStep(3);
+                        setTimeout(function () {
+                          setStep(1);
+                          setImage(null);
+                        }, 6000);
+                      }, 5000);
+                    } else if (keyPressed === "Male") {
+                      setTimeout(function () {
+                        const resultObj =
+                          MaleArr[Math.floor(Math.random() * 17)];
+                        console.log(resultObj);
+
+                        setResult(resultObj);
+                        setStep(3);
+                        setTimeout(function () {
+                          setStep(1);
+                          setImage(null);
+                        }, 6000);
+                      }, 5000);
+                    } else if (keyPressed === "Female") {
+                      setTimeout(function () {
+                        const resultObj =
+                          FemaleArr[Math.floor(Math.random() * 3)];
+                        console.log(resultObj);
+
+                        setResult(resultObj);
+
+                        setStep(3);
+                        setTimeout(function () {
+                          setStep(1);
+                          setImage(null);
+                        }, 6000);
+                      }, 5000);
+                    }
+                  } else {
+                    takePicture(personImage);
+                  }
+                }}
+              >
+                <div className="app-splash-button-text">Proceed</div>
+                <FeatherIcon
+                  className="app-splash-button-icon"
+                  icon="chevron-right"
+                  size="32"
+                />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="app-splash-button"
+                onClick={() => {
+                  setImage(webcamRef.current.getScreenshot());
+                }}
+              >
+                <FeatherIcon
+                  className="app-splash-button-icon"
+                  icon="camera"
+                  size="32"
+                />
+                <div className="app-splash-button-text">Take Picture</div>
+              </button>
+            </>
+          )}
+        </div>
         <div id="arrowAnim">
           <div className="arrowSliding">
             <div className="arrow"></div>
@@ -350,62 +392,6 @@ function App() {
           </div>
           <div className="arrowSliding delay3">
             <div className="arrow"></div>
-          </div>
-        </div>
-        <header className="app-splash-text">
-          <p>Please stand at the marked position</p>
-        </header>
-      </div>
-
-      {/* FACE */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          height: 1920,
-          width: 1080,
-          transition: "all 2s",
-          zIndex: 1100,
-
-          opacity: 1,
-          display: "none",
-        }}
-      >
-        <div>
-          <div style={{ position: "absolute" }}>
-            <p style={{ color: "#fff" }}>{`Loading: ${isLoading}`}</p>
-            <p style={{ color: "#fff" }}>{`Face Detected: ${detected}`}</p>
-            <p
-              style={{ color: "#fff" }}
-            >{`Number of faces detected: ${facesDetected}`}</p>
-          </div>
-          <div
-            style={{ width: "1080px", height: "1920px", position: "relative" }}
-          >
-            {boundingBox.map((box, index) => (
-              <div
-                key={`${index + 1}`}
-                style={{
-                  border: index === 0 ? "4px solid green" : "4px solid red",
-                  position: "absolute",
-                  top: `${box.yCenter * 100}%`,
-                  left: `${box.xCenter * 100}%`,
-                  width: `${box.width * 100}%`,
-                  height: `${box.height * 100}%`,
-                  zIndex: 1,
-                }}
-              />
-            ))}
-            <Webcam
-              ref={webcamRef}
-              forceScreenshotSourceSize
-              screenshotFormat="image/jpeg"
-              style={{
-                height: "100%",
-                width: "100%",
-              }}
-            />
           </div>
         </div>
       </div>

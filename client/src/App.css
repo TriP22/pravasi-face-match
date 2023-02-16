@@ -8,20 +8,50 @@
 
 .app-splash-text {
   background-color: #000;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-size: calc(10px + 2vmin);
+  padding-top: 50px;
   color: white;
+}
+
+.app-splash-buttons {
+  position: absolute;
+  width: 100%;
+  bottom: 300px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: space-around;
+}
+
+.app-splash-button {
+  display: flex;
+  justify-content: flex-start;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 16px 16px;
+  font-weight: 500;
+  font-size: 24px;
+  box-shadow: 0px 3px 50px 2px rgba(255, 255, 255, 0.5);
+}
+
+.app-splash-button-icon {
+  padding: 0px 16px;
+}
+
+.app-splash-button-text {
+  padding: 0px 16px;
+  margin: auto;
 }
 
 #arrowAnim {
   position: absolute;
-  width: 150px;
-  height: 150px;
-  bottom: 200px;
+  width: 100px;
+  height: 100px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -59,37 +89,37 @@
 @-webkit-keyframes slide {
   0% {
     opacity: 0;
-    transform: translateY(-10vw);
+    transform: translateY(-6vw);
   }
   20% {
     opacity: 1;
-    transform: translateY(-5vw);
+    transform: translateY(-3vw);
   }
   80% {
     opacity: 1;
-    transform: translateY(5vw);
+    transform: translateY(3vw);
   }
   100% {
     opacity: 0;
-    transform: translateY(10vw);
+    transform: translateY(6vw);
   }
 }
 @keyframes slide {
   0% {
     opacity: 0;
-    transform: translateY(-10vw);
+    transform: translateY(-6vw);
   }
   20% {
     opacity: 1;
-    transform: translateY(-5vw);
+    transform: translateY(-3vw);
   }
   80% {
     opacity: 1;
-    transform: translateY(5vw);
+    transform: translateY(3vw);
   }
   100% {
     opacity: 0;
-    transform: translateY(10vw);
+    transform: translateY(6vw);
   }
 }
 
