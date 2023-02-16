@@ -148,10 +148,6 @@ def create_user():
         f.write(decoded_data)
         f.close()
 
-    print('sone ja raha ')
-    sleep(5)
-    print('uth gaya')
-
     video = cv2.VideoCapture('image.jpg')
     while cv2.waitKey(1) < 0:
         hasFrame, frame = video.read()
@@ -164,6 +160,13 @@ def create_user():
             print("No face detected")
             gender = "Male"
             age = "25-32"
+            status = 400
+
+        if faceBoxes:
+            print('sone ja raha ')
+            status = 200
+            sleep(5)
+            print('uth gaya')
 
         for faceBox in faceBoxes:
             face = frame[max(0, faceBox[1]-padding):
@@ -196,7 +199,7 @@ def create_user():
 
     response = jsonify(
         # {"name": closest_person['name'], "similarity": closest_similarity, "random_name": names[random.randint(0, 19)]})
-        {"gender": gender, "age": age, "random_name": names[random.randint(0, 19)]})
+        {"status": status, "gender": gender, "age": age, "random_name": names[random.randint(0, 19)]})
     return response
 
 
