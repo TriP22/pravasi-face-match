@@ -4,6 +4,8 @@ import Webcam from "react-webcam";
 import FeatherIcon from "feather-icons-react";
 
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import AiAnimation from "./assets/ai_animation.gif";
 import Sound from "./assets/sound.mp3";
@@ -173,6 +175,8 @@ function App() {
     }
   }, [step]);
 
+  const notifyNoFace = () => toast("No face detected !");
+
   function takePicture(personImg) {
     // Create a FormData object to store the image data
     const formData = new FormData();
@@ -183,27 +187,31 @@ function App() {
     axios
       .post("http://localhost:5000/api/v1/user", formData)
       .then((response) => {
-        console.log(response.data);
+        if (response.data?.status === 200) {
+          if (response.data?.gender === "Male") {
+            const resultObj = MaleArr[Math.floor(Math.random() * 17)];
+            setResult(resultObj);
+            setStep(3);
+            setTimeout(function () {
+              setStep(1);
+              setImage(null);
+            }, 6000);
+          } else if (response.data?.gender === "Female") {
+            const resultObj = FemaleArr[Math.floor(Math.random() * 3)];
+            console.log(resultObj);
 
-        if (response.data?.gender === "Male") {
-          const resultObj = MaleArr[Math.floor(Math.random() * 17)];
-          setResult(resultObj);
-          setStep(3);
-          setTimeout(function () {
-            setStep(1);
-            setImage(null);
-          }, 6000);
-        } else if (response.data?.gender === "Female") {
-          const resultObj = FemaleArr[Math.floor(Math.random() * 3)];
-          console.log(resultObj);
+            setResult(resultObj);
 
-          setResult(resultObj);
-
-          setStep(3);
-          setTimeout(function () {
-            setStep(1);
-            setImage(null);
-          }, 6000);
+            setStep(3);
+            setTimeout(function () {
+              setStep(1);
+              setImage(null);
+            }, 6000);
+          }
+        } else {
+          setStep(1);
+          setImage(null);
+          notifyNoFace();
         }
       })
       .catch((error) => {
@@ -242,6 +250,7 @@ function App() {
 
   return (
     <div className="App">
+      <ToastContainer position="bottom-right" autoClose={3000} />
       <audio src={Sound} ref={soundRef} loop autoPlay />
 
       {/* SPLASH */}
