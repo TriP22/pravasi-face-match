@@ -62,67 +62,6 @@ genderNet = cv2.dnn.readNet(genderModel, genderProto)
 padding = 20
 
 
-# from vggFaceModel import vgg_face
-
-# model = vgg_face('vggFace/vgg_face_weights.h5')
-# print(model.summary())
-
-
-# def reshapeImage(path):
-#     im = Image.open(path)
-#     im = im.resize((224, 224))
-#     im = np.array(im).astype(np.float32) / 255
-#     im = np.expand_dims(im, axis=0)
-#     return im
-
-
-# def img_to_encoding(path):
-#     im = reshapeImage(path)
-#     out = model.predict(im)
-#     return out
-
-
-# def distance(encoding1, endcoding2):
-#     return np.linalg.norm(encoding1 - endcoding2)
-
-
-# def triplet_loss(anchor, postive, negative, margin=0.2):
-#     loss = (distance(anchor, postive)**2) - \
-#         (distance(anchor, negative)**2) + margin
-#     loss = max(loss, 0)
-#     return loss
-
-
-# def find_closest(database, encoding):
-#     lowest_similarity = 100
-#     closest_person = None
-#     for person in database:
-#         current_similarity = distance(person['encoding'], encoding)
-#         if current_similarity < lowest_similarity:
-#             closest_person = person
-#             lowest_similarity = current_similarity
-#     return closest_person
-
-
-# faces_dir = os.listdir('./faces')
-# names = [name.strip('.jpg').replace('-', ' ') for name in faces_dir]
-# encodings = []
-# for i in range(len(names)):
-#     path = f'faces/{faces_dir[i]}'
-#     encoding = img_to_encoding(path)
-#     encodings.append({
-#         "name": names[i],
-#         "path": path,
-#         "encoding": encoding
-#     })
-
-
-# def plot_images(paths):
-#     f, axarr = plt.subplots(1, len(paths))
-#     for i in range(len(paths)):
-#         axarr[i].imshow(Image.open(paths[i]))
-
-
 app = Flask(__name__)
 app.config['DEBUG'] = True
 CORS(app)
@@ -149,59 +88,44 @@ def create_user():
         f.close()
 
     video = cv2.VideoCapture('image.jpg')
-    while cv2.waitKey(1) < 0:
-        hasFrame, frame = video.read()
-        if not hasFrame:
-            cv2.waitKey()
-            break
+    # while cv2.waitKey(1) < 0:
+    hasFrame, frame = video.read()
 
-        resultImg, faceBoxes = highlightFace(faceNet, frame)
-        if not faceBoxes:
-            print("No face detected")
-            gender = "Male"
-            age = "25-32"
-            status = 400
+    resultImg, faceBoxes = highlightFace(faceNet, frame)
+    if not faceBoxes:
+        print("No face detected")
+        gender = "Male"
+        age = "25-32"
+        status = 400
 
-        if faceBoxes:
-            print('sone ja raha ')
-            status = 200
-            sleep(5)
-            print('uth gaya')
+    if faceBoxes:
+        print('sone ja raha ')
+        status = 200
+        print('uth gaya')
 
-        for faceBox in faceBoxes:
-            face = frame[max(0, faceBox[1]-padding):
-                         min(faceBox[3]+padding, frame.shape[0]-1), max(0, faceBox[0]-padding):min(faceBox[2]+padding, frame.shape[1]-1)]
+    for faceBox in faceBoxes:
+        face = frame[max(0, faceBox[1]-padding):
+                     min(faceBox[3]+padding, frame.shape[0]-1), max(0, faceBox[0]-padding):min(faceBox[2]+padding, frame.shape[1]-1)]
 
-            blob = cv2.dnn.blobFromImage(
-                face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
-            genderNet.setInput(blob)
-            genderPreds = genderNet.forward()
-            gender = genderList[genderPreds[0].argmax()]
-            print(f'Gender: {gender}')
+        blob = cv2.dnn.blobFromImage(
+            face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
+        genderNet.setInput(blob)
+        genderPreds = genderNet.forward()
+        gender = genderList[genderPreds[0].argmax()]
+        print(f'Gender: {gender}')
 
-            ageNet.setInput(blob)
-            agePreds = ageNet.forward()
-            age = ageList[agePreds[0].argmax()]
-            print(f'Age: {age[1:-1]} years')
+        ageNet.setInput(blob)
+        agePreds = ageNet.forward()
+        age = ageList[agePreds[0].argmax()]
+        print(f'Age: {age[1:-1]} years')
 
-    # # input_img_path = 'me.jpg'
-    # input_img_path = 'image.jpg'
-    # encoding = img_to_encoding(input_img_path)
-    # closest_person = find_closest(encodings, encoding)
-    # closest_similarity = 1 - distance(closest_person['encoding'], encoding)
-    # plot_images([input_img_path, closest_person['path']])
-    # print('found '+closest_person['name']+' with ' +
-    #       str(closest_similarity)+' similarity')
+    os.system(
+        "python3 code/morphinit.py --img1 image.jpg --img2 edawrd.png --output output.mp4")
 
-    # # validate and save user to database
-    faces_dir = os.listdir('./faces')
-    names = [name.strip('.jpg').replace('-', ' ') for name in faces_dir]
+    response = jsonify({"status": status, "gender": gender, "age": age})
 
-    response = jsonify(
-        # {"name": closest_person['name'], "similarity": closest_similarity, "random_name": names[random.randint(0, 19)]})
-        {"status": status, "gender": gender, "age": age, "random_name": names[random.randint(0, 19)]})
     return response
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=8000, debug=True)

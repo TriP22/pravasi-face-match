@@ -185,7 +185,7 @@ function App() {
     // Send the POST request to the Flask API with the FormData object as the request body
     setLoading(true);
     axios
-      .post("http://localhost:5000/api/v1/user", formData)
+      .post("http://127.0.0.1:8000/api/v1/user", formData)
       .then((response) => {
         if (response.data?.status === 200) {
           if (response.data?.gender === "Male") {
@@ -286,6 +286,7 @@ function App() {
             ref={webcamRef}
             forceScreenshotSourceSize
             screenshotFormat="image/jpeg"
+            videoConstraints={{ width: 720, height: 720 }}
             style={{
               height: "100%",
               width: "100%",
