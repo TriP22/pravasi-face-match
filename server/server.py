@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS,  cross_origin
 import os
 from time import sleep
@@ -182,6 +182,12 @@ padding = 20
 app = Flask(__name__, static_url_path='/static')
 app.config['DEBUG'] = True
 CORS(app)
+
+
+# Serve the React app from the specified URL
+@app.route('/')
+def serve_react():
+    return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.route('/api/v1/user', methods=['POST'])
