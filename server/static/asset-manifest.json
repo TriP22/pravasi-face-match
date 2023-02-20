@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.070f9064.css",
-    "main.js": "/static/js/main.f052b178.js",
+    "main.js": "/static/js/main.f73d3bf0.js",
     "static/js/787.c4e7f8f9.chunk.js": "/static/js/787.c4e7f8f9.chunk.js",
     "static/media/ai_animation.gif": "/static/media/ai_animation.9a680a7cae062f60a40a.gif",
     "static/media/Sister-Nivedita.jpg": "/static/media/Sister-Nivedita.06a5fb63ca43971c77e2.jpg",
@@ -27,11 +27,11 @@
     "static/media/sound.mp3": "/static/media/sound.a408180d1766b7bc41d4.mp3",
     "index.html": "/index.html",
     "main.070f9064.css.map": "/static/css/main.070f9064.css.map",
-    "main.f052b178.js.map": "/static/js/main.f052b178.js.map",
+    "main.f73d3bf0.js.map": "/static/js/main.f73d3bf0.js.map",
     "787.c4e7f8f9.chunk.js.map": "/static/js/787.c4e7f8f9.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.070f9064.css",
-    "static/js/main.f052b178.js"
+    "static/js/main.f73d3bf0.js"
   ]
 }

@@ -164,7 +164,7 @@ function App() {
   // const [keyPressed, setKeyPressed] = useState(null);
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState(
-    "http://localhost:8000/static/output.mp4"
+    "http://localhost:5000/static/output.mp4"
   );
   const [timestamp, setTimestamp] = useState(Date.now());
 
@@ -189,7 +189,7 @@ function App() {
     // Send the POST request to the Flask API with the FormData object as the request body
     setLoading(true);
     axios
-      .post("http://localhost:8000/api/v1/user", formData)
+      .post("http://localhost:5000/api/v1/user", formData)
       .then((response) => {
         if (response.data?.status === 200) {
           setResult(response.data);
