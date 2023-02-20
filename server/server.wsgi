@@ -8,4 +8,4 @@ with open(activate_this) as file_:
 
 sys.path.insert(0, '/home/ubuntu/pravasi-face-match/server')
 
-from app import app as application
+from server import app as application
